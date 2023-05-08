@@ -4,6 +4,7 @@ import com.peer39.homework.config.Runner;
 import com.peer39.homework.dto.ClassificationDTO;
 import com.peer39.homework.models.Category;
 import com.peer39.homework.models.CategoryKeyword;
+import lombok.extern.log4j.Log4j2;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Service;
@@ -12,8 +13,10 @@ import java.io.IOException;
 import java.util.*;
 
 @Service
+@Log4j2
 public class ClassificationServiceImpl implements ClassificationService{
     private String extractTextFromUrl(String url) throws IOException {
+        // Using Jsoup library to read url text
         Document doc = Jsoup.connect(url).get();
         doc.select("script").remove();
         return doc.body().text();
@@ -28,8 +31,7 @@ public class ClassificationServiceImpl implements ClassificationService{
                             if (Objects.isNull(result.get(url)))
                                 result.put(url, extractTextFromUrl(url));
                         } catch (Exception e) {
-                            System.out.println("Error with: " + url);
-                            e.printStackTrace();
+                            log.error("Error with: " + url + " - Error message: " + e.getMessage());
                         }
                     });
         } catch (Exception e) {
@@ -56,12 +58,8 @@ public class ClassificationServiceImpl implements ClassificationService{
 
     @Override
     public List<ClassificationDTO> classifyUrls(List<String> urls) {
+        // Load pre-defined categories
         List<Category> categories = Runner.initializeModel();
-//        List<String> urls = Arrays.asList(
-//                "http://www.starwars.com",
-//                "https://www.imdb.com/find?q=star+wars&ref_=nv_sr_sm",
-//                "https://edition.cnn.com/sport"
-//        );
 
         // Extract text from URLs
         Map<String, String> urlTextMap = extractTextFromUrls(urls);
